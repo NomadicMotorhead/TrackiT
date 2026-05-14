@@ -333,12 +333,11 @@ body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-seri
 
   <div class="header">
     <div>
-      <div class="app-name">TRACK<span>IT</span></div>
+      <div class="app-name">KITNA<span>KHAYA</span></div>
       <div class="header-date" id="todayDate">Loading...</div>
     </div>
     <div class="header-right">
-      <button class="icon-btn nav" onclick="googleLogin()">Login</button>
-      <button class="icon-btn" onclick="logout()">Logout</button>
+      <button class="icon-btn nav" id="loginBtn">Login</button>
       <button class="icon-btn" onclick="resetDay()">Reset</button>
     </div>
   </div>
@@ -1085,32 +1084,50 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 
-function googleLogin() {
-  const provider = new firebase.auth.GoogleAuthProvider();
+const provider = new firebase.auth.GoogleAuthProvider();
+</script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
 
-  auth.signInWithPopup(provider)
-    .then((result) => {
-      showToast('Logged in: ' + result.user.displayName);
-      console.log(result.user);
-    })
-    .catch((error) => {
-      console.error(error);
-      showToast('Login failed', 'error');
+  const loginBtn = document.getElementById('loginBtn');
+
+  if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+      try {
+        await auth.signInWithRedirect(provider);
+      } catch (error) {
+        console.error(error);
+        alert(error.message);
+      }
     });
-}
-
-function logout() {
-  auth.signOut();
-  showToast('Logged out');
-}
-
-auth.onAuthStateChanged(user => {
-  if (user) {
-    console.log("Logged in:", user.displayName);
-  } else {
-    console.log("Logged out");
   }
+
 });
-</script> 
+
+auth.getRedirectResult()
+  .then((result) => {
+    if (result.user) {
+      console.log("Logged in:", result.user.displayName);
+      alert("Logged in as " + result.user.displayName);
+    }
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
+auth.onAuthStateChanged((user) => {
+
+  const btn = document.getElementById('loginBtn');
+
+  if (!btn) return;
+
+  if (user) {
+    btn.textContent = user.displayName.split(' ')[0];
+  } else {
+    btn.textContent = 'Login';
+  }
+
+});
+</script>
 </body>
 </html>
